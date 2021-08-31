@@ -1,0 +1,62 @@
+
+
+
+Example 1: This file contains the input_file to compute the polarization and angle resolved HRS calculation of water molecules in solution according to the hyperpolarizability tensors given in Y. Luo, and al, J. Chem. Phys. 98, 7159 (1993).
+
+to lauch the HRS program, enter in the PySHS_V2 directory:
+./Work/HRS polarplot_90  examples/input_beta_water examples/HRS_polar90out
+
+To vizualise the results, enter:
+gnuplot
+
+then
+
+plot for [col=2:3] "out_plot" using 1:col with lines title columnheader
+
+
+***********************************************************************************
+
+
+Exemple 2: This file contains the input_file to compute the polarization and angle resolved SHS calculation of a supramolecular structure of molecules adsorbed onto a cylinder.
+
+a)To generate the position orientation file enter:
+python3 Src/script_cylinder.py Examples/outscriptcylinder
+
+b)then to compute the polarisation plot in the right angle direction, enter:
+./Work/SHS polarplot_90 Examples/input_beta_1D Examples/outscriptcylinder Examples/outSHS_cylinder
+
+c)To vizualise the results, enter:
+gnuplot
+
+then
+
+plot for [col=2:3] "out_plot" using 1:col with lines title columnheader
+
+
+***************************************************************************************
+
+
+Exemple 3: Compute the polarization plot of a sphere
+enter:
+./Work/sphere_SHS polarplot_90 Examples/input_ki2 Examples/outsphere
+
+to plot the results, enter:
+gnuplot
+plot for [col=2:3] "out_plot" using 1:col with lines title columnheader
+
+ 
+***************************************************************************************
+
+Exemple 4: Compute SHS  angular dependency of a sphere:
+enter:
+./Work/sphere_SHS angle_scattering Examples/input_ki2 Examples/outsphere
+
+to plot the results, enter:
+gnuplot
+plot for [col=2:5] "out_plot" using 1:col with lines title columnheader
+
+
+
+
+
+
