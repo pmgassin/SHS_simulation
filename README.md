@@ -1,5 +1,5 @@
 # SHS_simulation
-SHS_simulation is a collection of different program which can compute the Second Harmonic Intensity Scattered by a supramolecular structure.
+SHS_simulation is a collection of different programs which can compute the Second Harmonic Intensity Scattered by a supramolecular structure.
 Don't forget to cite this work:              
 J. Chem. Inf. Model. 2020, 60, 12, pp 5912–5917
 
