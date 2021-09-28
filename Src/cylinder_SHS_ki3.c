@@ -1,5 +1,5 @@
 /*********************************************************************************
-******************PROGRAM cylinder_shell_SHS***************************************************
+******************PROGRAM cylinder_shell_SHS**************************************
 **********************************************************************************
    Py_SHS - An open source software about Second Harmonic Scattering 
    developed at Institut Charles Gerhardt Montpellier - ENSCM
