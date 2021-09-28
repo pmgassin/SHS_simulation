@@ -1,5 +1,5 @@
 /*********************************************************************************
-******************PROGRAM sphere_SHS***************************************************
+******************PROGRAM cylinder_shell_SHS***************************************************
 **********************************************************************************
    Py_SHS - An open source software about Second Harmonic Scattering 
    developed at Institut Charles Gerhardt Montpellier - ENSCM
@@ -325,7 +325,7 @@ printf("**** Dr Pierre-Marie GASSIN and Dr Gaelle GASSIN    ****\n");
 printf("****                  ICGM - ENSCM                  ****\n"); 
 printf("****                   june 2021                    ****\n");
 printf("********************************************************\n");
-printf("                cylinder SHS programm                     \n");
+printf("                cylinder_shell_SHS programm             \n");
 printf("           Don't forget to cite this work:              \n");
 printf("    J. Chem. Inf. Model. 2020, 60, 12, pp 5912–5917     \n");
 printf("                                                        \n");
@@ -382,10 +382,9 @@ printf("      ******************************     \n");
 printf("Enter the radius of the cylinder in nm? ");
 scanf("%lf", &R0);
 printf("      ******************************     \n");
-printf("Enter the length of the debye in nm? ");
+printf("Enter the extension shell length  in nm? ");
 scanf("%lf", &lengthdebye);
 printf("      ******************************     \n");
-
 printf("Enter the length of the cylinder in nm? ");
 scanf("%lf", &length);
 printf("      ******************************     \n");
@@ -831,7 +830,7 @@ else if (strcmp(str3,argv[1]) == 0){
 
 fprintf(fichier_out,"***************************************************************\n");
 fprintf(fichier_out,"                                            \n");
-fprintf(fichier_out,"****            cylinder SHS angular distribution          ****\n");
+fprintf(fichier_out,"****            cylinder_shell_SHS angular distribution    ****\n");
 fprintf(fichier_out,"                                            \n");
 fprintf(fichier_out," ****************OUTPUT****************************************\n");
 fprintf(fichier_out,  " grandtheta  IPSS-IH(0°)   IPPP-IH(90°)   ISSS-IV(0°)   ISPP-IV(90°) \n"); 
