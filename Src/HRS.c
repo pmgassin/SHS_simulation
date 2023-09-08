@@ -5,7 +5,7 @@
    developed at Institut Charles Gerhardt Montpellier - ENSCM
    Dr Pierre-Marie GASSIN
    Dr Gassin GASSIN
-    (june 2021)  
+    (september 2023)  
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -260,18 +260,18 @@ double pi=3.1415926535897;
 double pisur2;
 double beta[3][3][3];
 double phi,theta,psi;
-double av=0,bv=0,cv=0,ah=0,bh=0,ch=0;//,bv1=0,bv2=0,bh1=0,bh2=0;
+double av=0,bv=0,cv=0,ah=0,bh=0,ch=0,bv1=0,bv2=0,bh1=0,bh2=0;
 short nb_lignes_lues, nb_val_lues;
 int pas,nx,nz,ny;
 double hx,hy,hz,xi,yj,zk;
 double compteur;
 double I4v,I2v,I2h,I4h;
 double Iv,Ih,gammaaa,nomc,noms,deltax,deltay,deltaz;
-char str1[20]="polarplot_90";
-char str2[20]="polarplot_0";
+char str1[20]="polarplot_single";
+char str2[20]="polarplot_integrate";
 char str3[20]="angle_scattering";
-double grandtheta,grandthetadegree,IH_0,IH_90,IV_0,IV_90,Iz_0,Iz_90,Iy_90,Iy_0,IV_0b,IV_90b;
-int pas2,mmm,mmmf;
+double grandtheta,grandthetadegree,grandtheta_1,grandtheta_2,grandthetadegree_1,grandthetadegree_2,IH_0,IH_90,IV_0,IV_90,Iz_0,Iz_90,Iy_90,Iy_0,IV_0b,IV_90b;
+int pas2,mmm,mmmf,point,ic;
 double ui1,ui2,ui3,ui4;
 double beta_xxx_moy,beta_xyy_moy,beta_y_moy_0,beta_y_moy_90,beta_z_moy_0,beta_z_moy_90=0;
 pisur2=pi/2;
@@ -375,7 +375,7 @@ fprintf(fichier_out,"****           Py_SHS: An open source software      ****\n"
 fprintf(fichier_out,"****         about Second Harmonic Scattering       ****\n");
 fprintf(fichier_out,"**** Dr Pierre-Marie GASSIN and Dr Gaelle GASSIN    ****\n");          
 fprintf(fichier_out,"****                  ICGM - ENSCM                  ****\n"); 
-fprintf(fichier_out,"****                   june 2021                    ****\n");
+fprintf(fichier_out,"****                   september 2023               ****\n");
 fprintf(fichier_out,"********************************************************\n");
 fprintf(fichier_out,"                                                        \n");
 fprintf(fichier_out,"           Don't forget to cite this work:              \n");
@@ -387,8 +387,13 @@ fprintf(fichier_out,"*********       SIMULATION RESULTS        **************\n"
 fprintf(fichier_out,"********************************************************\n");
 
 if (strcmp(str1,argv[1]) == 0){
-printf("********** Begin calculation polar plot at 90° **************\n");
+printf("Enter the scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree);
+printf("      ******************************     \n");
+grandtheta=grandthetadegree*2*pi/360;
+printf("********** Begin calculation polar plot at  %lf ° ********\n", grandthetadegree);
 //printf("calculation in progress:");
+
 for (i=0;i<nx;i++){
 	compteur=i*100/nx;
 	printf("calculation in progress: %lf\n",compteur);
@@ -435,7 +440,7 @@ fichier_grace1 = fopen("out_plot", "w");
 }
 
 fprintf(fichier_out,"                                      \n");
-fprintf(fichier_out,"* POLAR PLOT - CONFIGURATION AT 90° *\n");
+fprintf(fichier_out," POLAR PLOT - CONFIGURATION AT %lf °  \n", grandthetadegree);
 fprintf(fichier_out,"                                    \n");
 fprintf(fichier_out,"nombre de dipole = %d  \n",nombredipole);
 fprintf(fichier_out,"*********          Hyperpolarizability Tensor      ***********\n");
@@ -479,8 +484,20 @@ fclose(fichier_grace1);
 
 
 else if (strcmp(str2,argv[1]) == 0){
-printf("********** Begin calculation polar plot at 0° **************\n");
-printf("calculation in progress : .");
+printf("Enter the beginning scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_1);
+printf("      ******************************     \n");
+printf("Enter the final scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_2);
+printf("      ******************************     \n");
+grandtheta_1=grandthetadegree_1*2*pi/360;
+grandtheta_2=grandthetadegree_2*2*pi/360;
+printf(" Number of integrale points ? ");
+scanf("%d", &point);
+printf("      ******************************     \n");
+
+
+for (ic=0;ic<point;ic++){
 for (i=0;i<nx;i++){
 //	compteur=i*100/nx;
 //printf("..");
@@ -490,7 +507,7 @@ for (i=0;i<nx;i++){
             		yj = 0 + hy/2 + j*hy;
             		zk = 0 + hz/2 + kkk*hz;
             		
-					av=av+hx*hy*hz*betalabxxx_sin(xi, yj, zk,beta);
+			av=av+hx*hy*hz*betalabxxx_sin(xi, yj, zk,beta);
             		bv=bv+hx*hy*hz*beta_bv(xi, yj, zk,beta);
             		cv=cv+hx*hy*hz*betalabxyy_sin(xi, yj, zk,beta);
             		ah=ah+hx*hy*hz*betalabyxx_sin(xi, yj, zk,beta);
@@ -500,6 +517,18 @@ for (i=0;i<nx;i++){
 			}
 		}
 	}
+}
+av=av/point;
+cv=cv/point;
+bv=bv/point;
+bv1=bv1/point;
+bv2=bv2/point;
+ah=ah/point;
+ch=ch/point;
+bh=bh/point;
+bh1=bh1/point;
+bh2=bh2/point;
+
 printf("\n"); 
 printf("**********calculation complete ************\n");           
 printf("av = %lf\n",av);
@@ -623,26 +652,19 @@ for (mmm=0;mmm<mmmf;mmm++){
                 zk = 0 + hz/2 + kkk*hz;
 				beta_xxx_moy=beta_xxx_moy+hx*hy*hz*(betalaboxxxint(xi, yj, zk,beta)*(betalaboxxxint(xi, yj, zk,beta)))*sin(yj);
                 beta_xyy_moy=beta_xyy_moy+hx*hy*hz*(betalaboxyyint(xi, yj, zk,beta)*(betalaboxyyint(xi, yj, zk,beta)))*sin(yj);
-				//beta_xxx_moy=beta_xxx_moy+hx*hy*hz*betalabxxx_sin(xi, yj, zk,beta);
-				//beta_xyy_moy=beta_xyy_moy+hx*hy*hz*betalabxyy_sin(xi, yj, zk,beta);
-				ui1=betalaboyxxint(xi,yj,zk,beta)*cos(grandtheta)*cos(grandtheta)-betalabozxxint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta);
-				ui2=betalabozxxint(xi,yj,zk,beta)*sin(grandtheta)*sin(grandtheta)-betalaboyxxint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta);
-				ui3=betalaboyyyint(xi,yj,zk,beta)*cos(grandtheta)*cos(grandtheta)-betalabozyyint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta);
-				ui4=betalabozyyint(xi,yj,zk,beta)*sin(grandtheta)*sin(grandtheta)-betalaboyyyint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta);
-                beta_y_moy_0=beta_y_moy_0+hx*hy*hz*ui1*ui1*sin(yj);//(pow(betalaboyxxint(xi, yj, zk,beta)*cos(grandtheta)*cos(grandtheta)-betalabozxxint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta)),2);
-                beta_z_moy_0=beta_z_moy_0+hx*hy*hz*ui2*ui2*sin(yj);//(pow(-betalaboyxxint(xi, yj, zk,beta)*cos(grandtheta)*sin(grandtheta)+betalabozxxint(xi,yj,zk,beta)*sin(grandtheta)*sin(grandtheta)),2);
-                beta_y_moy_90=beta_y_moy_90+hx*hy*hz*ui3*ui3*sin(yj);//(pow(betalaboyyyint(xi, yj, zk,beta)*cos(grandtheta)*cos(grandtheta)-betalabozyyint(xi, yj, zk,beta)*cos(grandtheta)*sin(grandtheta)),2);
-                beta_z_moy_90=beta_z_moy_90+hx*hy*hz*ui4*ui4*sin(yj);//(pow(-betalaboyyyint(xi, yj, zk,beta)*cos(grandtheta)*sin(grandtheta)+betalabozyyint(xi, yj, zk,beta)*sin(grandtheta)*sin(grandtheta)),2);
-				IV_0b=IV_0b+hx*hy*hz*betalabxxx_sin(xi, yj, zk,beta);
-				IV_90b=IV_90b+hx*hy*hz*betalabxyy_sin(xi, yj, zk,beta);
-			
+				
+				ui1=betalaboyxxint(xi,yj,zk,beta)*betalaboyxxint(xi,yj,zk,beta)*cos(grandtheta)*cos(grandtheta)-2*betalabozxxint(xi,yj,zk,beta)*betalaboyxxint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta)+betalabozxxint(xi,yj,zk,beta)*betalabozxxint(xi,yj,zk,beta)*sin(grandtheta)*sin(grandtheta);
+				ui2=betalaboyyyint(xi,yj,zk,beta)*betalaboyyyint(xi,yj,zk,beta)*cos(grandtheta)*cos(grandtheta)-2*betalabozyyint(xi,yj,zk,beta)*betalaboyyyint(xi,yj,zk,beta)*cos(grandtheta)*sin(grandtheta)+betalabozyyint(xi,yj,zk,beta)*betalabozyyint(xi,yj,zk,beta)*sin(grandtheta)*sin(grandtheta);
+				
+                beta_y_moy_0=beta_y_moy_0+hx*hy*hz*ui1*sin(yj);
+                beta_z_moy_0=beta_z_moy_0+hx*hy*hz*ui2*sin(yj);
 	
 			}
 		}
 	}
 	
-	IH_0=(sqrt(beta_y_moy_0*beta_y_moy_0+beta_z_moy_0*beta_z_moy_0));
-    IH_90=(sqrt(beta_y_moy_90*beta_y_moy_90+beta_z_moy_90*beta_z_moy_90));
+	IH_0=beta_y_moy_0;
+    IH_90=beta_z_moy_0;
     IV_0=beta_xxx_moy;
     IV_90=beta_xyy_moy;
     printf("IH_0=%lf    IH_90=%lf   IV_0=%lf    IV_90=%lf \n",IH_0,IH_90,IV_0,IV_90);
@@ -665,12 +687,14 @@ fclose(fichier_grace1);
 */
 
 else {
-printf("--------------------- --------------------------------------------------\n"); 
-printf("             ERROR in the name of the keyword                           \n"); 
-printf("USE ONLY polarplot_90 OR polarplot_180 OR angle_scattering  !!  \n"); 
-printf(" ! no calculation has been done ! Retry with the correct keyword        \n");
-printf("------------------------------------------------------------------------\n");
+printf("--------------------- ----------------------------------------------------\n"); 
+printf("             ERROR in the name of the keyword                             \n"); 
+printf(" USE ONLY polarplot_single OR polarplot_integrate OR angle_scattering  !! \n"); 
+printf(" ! no calculation has been done ! Retry with the correct keyword          \n");
+printf("--------------------------------------------------------------------------\n"); 
 }
+
+
 
 
 
