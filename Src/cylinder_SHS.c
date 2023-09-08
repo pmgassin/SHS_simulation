@@ -5,7 +5,7 @@
    developed at Institut Charles Gerhardt Montpellier - ENSCM
    Dr Pierre-Marie GASSIN
    Dr Gassin GASSIN
-    (june 2021)  
+    (september 2023)  
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -349,11 +349,11 @@ double compteur;
 double complex grandgammazxx_moy,grandgammayyy_moy,grandgammazyy_moy,grandgammaxxx_moy,grandgammayxx_moy,grandgammayxy_moy,grandgammaxyy_moy,grandgammaxxy_moy,grandgammazxy_moy;
 double I4v,I2v,I2h,I4h;
 double Iv,Ih,gammaaa,nomc,noms,deltax,deltay,deltaz;
-char str1[20]="polarplot_90";
-char str2[20]="polarplot_0";
+char str1[20]="polarplot_single";
+char str2[20]="polarplot_integrate";
 char str3[20]="angle_scattering";
-double grandtheta,grandthetadegree,IH_0,IH_90,IV_0,IV_90;
-int pas2,pas3,mmm,mmmf;
+double grandtheta,grandthetadegree,grandtheta_1,grandtheta_2,grandthetadegree_1,grandthetadegree_2,IH_0,IH_90,IV_0,IV_90;
+int pas2,pas3,mmm,mmmf,point,ic;
 double beta_y_moy_0,beta_z_moy_0,beta_y_moy_90,beta_z_moy_90,beta_xxx_moy,beta_xyy_moy;
 double complex n;
 double realpartn,imagpartn;
@@ -504,10 +504,13 @@ fprintf(fichier_out,"    zxx=%lf   zxy=%lf   zxz= %lf  \n",beta[2][0][0],beta[2]
 fprintf(fichier_out,"    zyx=%lf   zyy=%lf   zyz= %lf  \n",beta[2][1][0],beta[2][1][1],beta[2][1][2]);
 fprintf(fichier_out,"    zzx=%lf   zzy=%lf   zzz= %lf  \n",beta[2][2][0],beta[2][2][1],beta[2][2][2]);
 fprintf(fichier_out,"\n");
-fprintf(fichier_out,"*******************************************************\n");
+fprintf(fichier_out,"************************************************************************\n");
 if (strcmp(str1,argv[1]) == 0){
-printf("********** Begin calculation for cylinder polar plot at 90° ***********\n");
-//printf("calculation in progress:");
+printf("Enter the scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree);
+printf("      ******************************     \n");
+grandtheta=grandthetadegree*2*pi/360;
+printf("********** Begin calculation polar plot at  %lf ° ********\n", grandthetadegree);
 grandtheta=pisur2;
 
 av=0;
@@ -569,7 +572,7 @@ for (i=0;i<nx;i++){
         		
             	xi = (0 + hx/2 + i*hx);
             	yj =( (-length/2) + hy/2 + j*hy);
-		grandgammazxx_moy=grandgammazxx_moy+hx*hy*gzxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+		    grandgammazxx_moy=grandgammazxx_moy+hx*hy*gzxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
        		grandgammaxxx_moy=grandgammaxxx_moy+hx*hy*gxxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
         	grandgammayxx_moy=grandgammayxx_moy+hx*hy*gyxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
        		grandgammaxyy_moy=grandgammaxyy_moy+hx*hy*gxyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
@@ -580,18 +583,27 @@ for (i=0;i<nx;i++){
         	grandgammazxy_moy=grandgammazxy_moy+hx*hy*gzxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
 			}
            }
-avint=avint+hx2*hy2*(grandgammaxxx_moy*conj(grandgammaxxx_moy));     
-cvint=cvint+hx2*hy2*(grandgammaxyy_moy*conj(grandgammaxyy_moy));
-bvint=bvint+hx2*hy2*(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
+avint=avint+hx2*hy2*(grandgammaxxx_moy*conj(grandgammaxxx_moy))*sin(thetai);     
+cvint=cvint+hx2*hy2*(grandgammaxyy_moy*conj(grandgammaxyy_moy))*sin(thetai);
+bvint=bvint+hx2*hy2*(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy))*sin(thetai);
+bv1=bv1+hx2*hy2*sin(thetai)*(2*(grandgammaxxx_moy*(conj(grandgammaxxy_moy)))+2*(grandgammaxxy_moy*(conj(grandgammaxxx_moy))));
+bv2=bv2+hx2*hy2*sin(thetai)*(2*(grandgammaxyy_moy*(conj(grandgammaxxy_moy)))+2*(grandgammaxxy_moy*(conj(grandgammaxyy_moy))));
 
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
+//Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
+//Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
+//Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
+//Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
 
-ahint=ahint+hx2*hy2*(csqrt(Iy0*Iy0+Iz0*Iz0));     
-chint=chint+hx2*hy2*(csqrt(Iy90*Iy90+Iz90*Iz90));
-bhint=bhint+hx2*hy2*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
+ahint=ahint+hx2*hy2*sin(thetai)*(grandgammazxx_moy*conj(grandgammazxx_moy)*sin(grandtheta)*sin(grandtheta)+grandgammayxx_moy*conj(grandgammayxx_moy)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy)));			
+chint=chint+hx2*hy2*sin(thetai)*(grandgammayyy_moy*conj(grandgammayyy_moy)*cos(grandtheta)*cos(grandtheta)+grandgammazyy_moy*conj(grandgammazyy_moy)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy)));
+bhint=bhint+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy))-sin(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammazxy_moy)+grandgammayxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayxx_moy)+4*grandgammazxy_moy*conj(grandgammayxy_moy)+grandgammazxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammazxx_moy)));
+bh1=bh1+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(2*grandgammayxx_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(2*grandgammazxx_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazxx_moy))-sin(grandtheta)*cos(grandtheta)*(2*grandgammazxx_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazxx_moy)+2*grandgammayxx_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayxx_moy)));
+bh2=bh2+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(2*grandgammayyy_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayyy_moy))+sin(grandtheta)*sin(grandtheta)*(2*grandgammazyy_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazyy_moy))-sin(grandtheta)*cos(grandtheta)*(2*grandgammazyy_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazyy_moy)+2*grandgammayyy_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayyy_moy)));          		
+
+
+//ahint=ahint+hx2*hy2*(csqrt(Iy0*Iy0+Iz0*Iz0));     
+//chint=chint+hx2*hy2*(csqrt(Iy90*Iy90+Iz90*Iz90));
+//bhint=bhint+hx2*hy2*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
 }
            }
 
@@ -631,9 +643,13 @@ printf("\n");
 printf("**********calculation complete ************\n");           
 printf("av = %lf\n",av);
 printf("bv = %lf\n",bv);
+printf("bv1 = %lf\n",bv1);
+printf("bv2 = %lf\n",bv2);
 printf("cv = %lf\n",cv);
 printf("ah = %lf\n",ah);
 printf("bh = %lf\n",bh);
+printf("bh1 = %lf\n",bh1);
+printf("bh2 = %lf\n",bh2);
 printf("ch = %lf\n",ch);
 
 
@@ -654,7 +670,7 @@ fichier_grace1 = fopen("out_plot", "w");
 }
 fprintf(fichier_out,"********************************************\n");
 fprintf(fichier_out,"                                            \n");
-fprintf(fichier_out,"* Cylinder POLAR PLOT - CONFIGURATION AT 90° *\n");
+fprintf(fichier_out,"* Cylinder POLAR PLOT -                    *\n");
 fprintf(fichier_out,"                                            \n");
 fprintf(fichier_out,"********************************************\n");
 
@@ -674,8 +690,9 @@ for (iii=0;iii<100;iii++){
 gammaaa=2*pi*iii/100;
 nomc=cos(gammaaa);
 noms=sin(gammaaa);
-Iv=av*(nomc*nomc*nomc*nomc)+bv*(nomc*nomc*noms*noms)+cv*(noms*noms*noms*noms);
-Ih=ah*(nomc*nomc*nomc*nomc)+bh*(nomc*nomc*noms*noms)+ch*(noms*noms*noms*noms);
+Iv=av*(nomc*nomc*nomc*nomc)+bv*(nomc*nomc*noms*noms)+cv*(noms*noms*noms*noms)+bv1*nomc*nomc*nomc*noms+bv2*nomc*noms*noms*noms;
+Ih=ah*(nomc*nomc*nomc*nomc)+bh*(nomc*nomc*noms*noms)+ch*(noms*noms*noms*noms)+bh1*nomc*nomc*nomc*noms+bh2*nomc*noms*noms*noms;
+
 fprintf(fichier_grace1,"%lf %lf %lf\n",gammaaa,Iv,Ih);
 }
 printf("-----------------------------------------------------------------------------\n");
@@ -686,9 +703,25 @@ fclose(fichier_grace1);
 
 
 else if (strcmp(str2,argv[1]) == 0){
-printf("********** Begin calculation for sphere polar plot at 0° (transmission) ***********\n");
+printf("Enter the beginning scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_1);
+printf("      ******************************     \n");
+printf("Enter the final scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_2);
+printf("      ******************************     \n");
+grandtheta_1=grandthetadegree_1*2*pi/360;
+grandtheta_2=grandthetadegree_2*2*pi/360;
+printf(" Number of integrale points ? ");
+scanf("%d", &point);
+printf("      ******************************     \n");
+
+
+for (ic=0;ic<point;ic++){
+grandtheta=grandtheta_1+ic*(grandtheta_2-grandtheta_1)/(point-1);
+grandthetadegree=grandtheta*360/(2*pi);
+
 //printf("calculation in progress:");
-grandtheta=0;
+
 av=0;
 cv=0;
 bv=0;
@@ -706,6 +739,16 @@ hy2=(pi)/(pas);
 nx2=pas;
 ny2=pas;
 
+
+
+for (i2=0;i2<nx2;i2++){
+	compteur=i2*100/nx2;
+	printf("calculation in progress : %lf pourcent \n",compteur);
+	for (j2=0;j2<ny2;j2++){
+//for (k2=0;k2<nx2;k2++){
+phii=(0 + hx2/2 + i2*hx2);
+        	thetai=(0 + hy2/2 + j2*hy2);
+            	psii=0;//(0 + hx2/2 + k2*hx2);
 grandgammazxx_moy=0+0*I;
 grandgammayyy_moy=0+0*I;
 grandgammazyy_moy=0+0*I;
@@ -716,56 +759,79 @@ grandgammaxyy_moy=0+0*I;
 grandgammaxxy_moy=0+0*I;
 grandgammazxy_moy=0+0*I;
 
-//double boucle sur phi et theta
-for (i2=0;i2<nx2;i2++){
-	compteur=i2*100/nx2;
-	printf("calculation in progress : %lf pourcent \n",compteur);
-	for (j2=0;j2<ny2;j2++){
 for (i=0;i<nx;i++){
 	for (j=0;j<ny;j++){
-        		phii=(0 + hx2/2 + i2*hx2);
-        		thetai=(0 + hy2/2 + j2*hy2);
-            	psii=0;
+        		
             	xi = (0 + hx/2 + i*hx);
             	yj =( (-length/2) + hy/2 + j*hy);
-		    grandgammazxx_moy=grandgammazxx_moy+hx*hy*hy2*hx2*gzxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-       		grandgammaxxx_moy=grandgammaxxx_moy+hx*hy*hy2*hx2*gxxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-        	grandgammayxx_moy=grandgammayxx_moy+hx*hy*hy2*hx2*gyxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-       		grandgammaxyy_moy=grandgammaxyy_moy+hx*hy*hy2*hx2*gxyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-        	grandgammazyy_moy=grandgammazyy_moy+hx*hy*hy2*hx2*gzyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-       		grandgammayyy_moy=grandgammayyy_moy+hx*hy*hy2*hx2*gyyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-       		grandgammaxxy_moy=grandgammaxxy_moy+hx*hy*hy2*hx2*gxxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-       		grandgammayxy_moy=grandgammayxy_moy+hx*hy*hy2*hx2*gyxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
-        	grandgammazxy_moy=grandgammazxy_moy+hx*hy*hy2*hx2*gzxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+		    grandgammazxx_moy=grandgammazxx_moy+hx*hy*gzxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+       		grandgammaxxx_moy=grandgammaxxx_moy+hx*hy*gxxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+        	grandgammayxx_moy=grandgammayxx_moy+hx*hy*gyxx(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+       		grandgammaxyy_moy=grandgammaxyy_moy+hx*hy*gxyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+        	grandgammazyy_moy=grandgammazyy_moy+hx*hy*gzyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+       		grandgammayyy_moy=grandgammayyy_moy+hx*hy*gyyy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+       		grandgammaxxy_moy=grandgammaxxy_moy+hx*hy*gxxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+       		grandgammayxy_moy=grandgammayxy_moy+hx*hy*gyxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
+        	grandgammazxy_moy=grandgammazxy_moy+hx*hy*gzxy(R,xi,yj,phii,thetai,psii,beta,petitk,grandk,grandtheta);
 			}
            }
-           }
-           }
-printf("grandgammazxx %lf +I%lf \n",creal(grandgammazxx_moy),cimag(grandgammazxx_moy));
-printf("grandgammaxxx %lf +I%lf \n",creal(grandgammaxxx_moy),cimag(grandgammaxxx_moy));
-printf("grandgammayxx %lf +I%lf \n",creal(grandgammayxx_moy),cimag(grandgammayxx_moy));
-printf("grandgammazyy %lf +I%lf \n",creal(grandgammazyy_moy),cimag(grandgammazyy_moy));
-printf("grandgammayyy %lf +I%lf \n",creal(grandgammayyy_moy),cimag(grandgammayyy_moy));
-printf("grandgammaxxy %lf +I%lf \n",creal(grandgammaxxy_moy),cimag(grandgammaxxy_moy));
+avint=avint+hx2*hy2*sin(thetai)*(grandgammaxxx_moy*conj(grandgammaxxx_moy));     
+cvint=cvint+hx2*hy2*sin(thetai)*(grandgammaxyy_moy*conj(grandgammaxyy_moy));
+bvint=bvint+hx2*hy2*sin(thetai)*(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
+bv1=bv1+hx2*hy2*sin(thetai)*(2*(grandgammaxxx_moy*(conj(grandgammaxxy_moy)))+2*(grandgammaxxy_moy*(conj(grandgammaxxx_moy))));
+bv2=bv2+hx2*hy2*sin(thetai)*(2*(grandgammaxyy_moy*(conj(grandgammaxxy_moy)))+2*(grandgammaxxy_moy*(conj(grandgammaxyy_moy))));
 
-av=(grandgammaxxx_moy*conj(grandgammaxxx_moy));
-cv=(grandgammaxyy_moy*conj(grandgammaxyy_moy));
-bv=(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
-bh=(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-ah=(csqrt(Iy0*Iy0+Iz0*Iz0));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
-ch=(csqrt(Iy90*Iy90+Iz90*Iz90));
+ahint=ahint+hx2*hy2*sin(thetai)*(grandgammazxx_moy*conj(grandgammazxx_moy)*sin(grandtheta)*sin(grandtheta)+grandgammayxx_moy*conj(grandgammayxx_moy)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy)));			
+chint=chint+hx2*hy2*sin(thetai)*(grandgammayyy_moy*conj(grandgammayyy_moy)*cos(grandtheta)*cos(grandtheta)+grandgammazyy_moy*conj(grandgammazyy_moy)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy)));
+bhint=bhint+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy))-sin(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammazxy_moy)+grandgammayxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayxx_moy)+4*grandgammazxy_moy*conj(grandgammayxy_moy)+grandgammazxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammazxx_moy)));
+bh1=bh1+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(2*grandgammayxx_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(2*grandgammazxx_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazxx_moy))-sin(grandtheta)*cos(grandtheta)*(2*grandgammazxx_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazxx_moy)+2*grandgammayxx_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayxx_moy)));
+bh2=bh2+hx2*hy2*sin(thetai)*(cos(grandtheta)*cos(grandtheta)*(2*grandgammayyy_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayyy_moy))+sin(grandtheta)*sin(grandtheta)*(2*grandgammazyy_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazyy_moy))-sin(grandtheta)*cos(grandtheta)*(2*grandgammazyy_moy*conj(grandgammazxy_moy)+2*grandgammazxy_moy*conj(grandgammazyy_moy)+2*grandgammayyy_moy*conj(grandgammayxy_moy)+2*grandgammayxy_moy*conj(grandgammayyy_moy)));          		
+           		
+}
+           }
+
+}
+av=avint/point;
+bv=bvint/point;
+cv=cvint/point;
+bv1=bv1/point;
+bv2=bv2/point;
+ah=ahint/point;
+bh=bhint/point;
+ch=chint/point;
+bh1=bh1/point;
+bh2=bh2/point;
+
+
+
+
+
+//ah=(grandgammazxxint*conj(grandgammazxxint)*sin(grandtheta)*sin(grandtheta)+grandgammayxxint*conj(grandgammayxxint)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayxxint*conj(grandgammazxxint)+grandgammazxxint*conj(grandgammayxxint)));			
+//ch=(grandgammayyyint*conj(grandgammayyyint)*cos(grandtheta)*cos(grandtheta)+grandgammazyyint*conj(grandgammazyyint)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayyyint*conj(grandgammazyyint)+grandgammazyyint*conj(grandgammayyyint)));
+//bh=(cos(grandtheta)*cos(grandtheta)*(4*grandgammayxyint*conj(grandgammayxyint)+grandgammayxxint*conj(grandgammayyyint)+grandgammayyyint*conj(grandgammayxxint))+sin(grandtheta)*sin(grandtheta)*(4*grandgammazxyint*conj(grandgammazxyint)+grandgammazxxint*conj(grandgammazyyint)+grandgammazyyint*conj(grandgammazxxint))-sin(grandtheta)*cos(grandtheta)*(4*grandgammayxyint*conj(grandgammazxyint)+grandgammayxxint*conj(grandgammazyyint)+grandgammazyyint*conj(grandgammayxxint)+4*grandgammazxyint*conj(grandgammayxyint)+grandgammazxxint*conj(grandgammayyyint)+grandgammayyyint*conj(grandgammazxxint)));
+ 
+
+
+
+//bh=(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
+//Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
+//Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
+//ah=(csqrt(Iy0*Iy0+Iz0*Iz0));
+//Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
+//Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
+//ch=(csqrt(Iy90*Iy90+Iz90*Iz90));
 
 printf("\n"); 
 printf("**********calculation complete ************\n");           
 printf("av = %lf\n",av);
 printf("bv = %lf\n",bv);
+printf("bv1 = %lf\n",bv1);
+printf("bv2 = %lf\n",bv2);
 printf("cv = %lf\n",cv);
 printf("ah = %lf\n",ah);
 printf("bh = %lf\n",bh);
+printf("bh1 = %lf\n",bh1);
+printf("bh2 = %lf\n",bh2);
 printf("ch = %lf\n",ch);
 
 
@@ -806,8 +872,9 @@ for (iii=0;iii<100;iii++){
 gammaaa=2*pi*iii/100;
 nomc=cos(gammaaa);
 noms=sin(gammaaa);
-Iv=av*(nomc*nomc*nomc*nomc)+bv*(nomc*nomc*noms*noms)+cv*(noms*noms*noms*noms);
-Ih=ah*(nomc*nomc*nomc*nomc)+bh*(nomc*nomc*noms*noms)+ch*(noms*noms*noms*noms);
+Iv=av*(nomc*nomc*nomc*nomc)+bv*(nomc*nomc*noms*noms)+cv*(noms*noms*noms*noms)+bv1*nomc*nomc*nomc*noms+bv2*nomc*noms*noms*noms;
+Ih=ah*(nomc*nomc*nomc*nomc)+bh*(nomc*nomc*noms*noms)+ch*(noms*noms*noms*noms)+bh1*nomc*nomc*nomc*noms+bh2*nomc*noms*noms*noms;
+
 fprintf(fichier_grace1,"%lf %lf %lf\n",gammaaa,Iv,Ih);
 }
 printf("-----------------------------------------------------------------------------\n");
@@ -889,12 +956,12 @@ IV_0=(grandgammaxxx_moy*conj(grandgammaxxx_moy));
 IV_90=(grandgammaxyy_moy*conj(grandgammaxyy_moy));
 //bv=creal(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
 //bh=creal(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-IH_0=creal(csqrt(Iy0*Iy0+Iz0*Iz0));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
-IH_90=creal(csqrt(Iy90*Iy90+Iz90*Iz90));
+//Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
+//Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
+IH_0=(grandgammazxx_moy*conj(grandgammazxx_moy)*sin(grandtheta)*sin(grandtheta)+grandgammayxx_moy*conj(grandgammayxx_moy)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy)));
+//Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
+//Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
+IH_90=(grandgammayyy_moy*conj(grandgammayyy_moy)*cos(grandtheta)*cos(grandtheta)+grandgammazyy_moy*conj(grandgammazyy_moy)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy)));
        
 printf("IH_0=%lf    IH_90=%lf   IV_0=%lf    IV_90=%lf \n",IH_0,IH_90,IV_0,IV_90);
 fprintf(fichier_out," %lf    %lf   %lf   %lf   %lf \n",grandtheta,IH_0,IH_90,IV_0,IV_90);
@@ -914,7 +981,7 @@ fclose(fichier_grace1);
 else {
 printf("--------------------- --------------------------------------------------\n"); 
 printf("             ERROR in the name of the keyword                           \n"); 
-printf("USE ONLY polarplot_90 OR polarplot_180 OR angle_scattering  !!  \n"); 
+printf("USE ONLY polarplot_90 OR polarplot_0 OR angle_scattering  !!  \n"); 
 printf(" ! no calculation has been done ! Retry with the correct keyword        \n");
 printf("------------------------------------------------------------------------\n"); 
 }
