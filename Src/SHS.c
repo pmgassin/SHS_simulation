@@ -239,7 +239,7 @@ if (nombredipole > 0)
         }
 
 
-int i,j,k,kkk,ii,iii;
+int i,j,k,kkk,ii,iii,ic;
 int nom;
 double complex grandk,petitk;
 double pi=3.1415926535897;
@@ -260,13 +260,13 @@ double compteur;
 double complex betalabozyyint,betalaboxxxint,betalabozxxint,betalaboxyyint,betalaboxxyint,betalabozxyint,betalaboyyyint,betalaboyxyint,betalaboyxxint;
 double I4v,I2v,I2h,I4h;
 double Iv,Ih,gammaaa,nomc,noms,deltax,deltay,deltaz;
-char str1[20]="polarplot_90";
-char str2[20]="polarplot_180";
+char str1[20]="polarplot_single";
+char str2[20]="polarplot_integrate";
 char str3[20]="angle_scattering";
-double grandtheta,grandthetadegree,IH_0,IH_90,IV_0,IV_90;
-int pas2,mmm,mmmf;
+double grandtheta,grandthetadegree,grandtheta_1,grandtheta_2,grandthetadegree_1,grandthetadegree_2,IH_0,IH_90,IV_0,IV_90;
+int pas2,mmm,mmmf,point;
 double beta_y_moy_0,beta_z_moy_0,beta_y_moy_90,beta_z_moy_90,beta_xxx_moy,beta_xyy_moy;
-double complex n=1.33+1*I;
+double complex n=1.33+0*I;
 double realpartn,imagpartn;
 double longueuronde=800;
 pisur2=pi/2;
@@ -467,7 +467,11 @@ fprintf(fichier_out,"    zzx=%lf   zzy=%lf   zzz= %lf  \n",beta[2][2][0],beta[2]
 fprintf(fichier_out,"\n");
 fprintf(fichier_out,"*******************************************************\n");
 if (strcmp(str1,argv[1]) == 0){
-printf("********** Begin calculation polar plot at 90° **************\n");
+printf("Enter the scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree);
+printf("      ******************************     \n");
+grandtheta=grandthetadegree*2*pi/360;
+printf("********** Begin calculation polar plot at  %lf ° ********\n", grandthetadegree);
 //printf("calculation in progress:");
 for (i=0;i<nx;i++){
 	compteur=i*100/nx;
@@ -479,10 +483,13 @@ for (i=0;i<nx;i++){
             		zk = 0 + hz/2 + kkk*hz;
             		betalabozyyint=0+0*I;
             		betalaboxxxint=0+0*I;
-           		betalabozxxint=0+0*I;
+           		    betalabozxxint=0+0*I;
             		betalaboxyyint=0+0*I;
             		betalaboxxyint=0+0*I;
             		betalabozxyint=0+0*I;
+            		betalaboyxyint=0+0*I;
+            		betalaboyxxint=0+0*I;
+            		
 			for (ii=0;ii<nombredipole;ii++){
 				betameso[0][0][0]=betamesoxxx[ii];
 				betameso[0][0][1]=betamesoxxy[ii];	
@@ -514,25 +521,32 @@ for (i=0;i<nx;i++){
 				betameso[2][2][1]=betamesozzy[ii];	
 				betameso[2][2][2]=betamesozzz[ii];
 
-				betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
-                		betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
-                		betalabozxxint=betalabozxxint+betalabzxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
-                		betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
-               			betalaboxxyint=betalaboxxyint+betalabxxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
-                		betalabozxyint=betalabozxyint+betalabzxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pisur2);
+				betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalabozxxint=betalabozxxint+betalabzxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+               	betalaboxxyint=betalaboxxyint+betalabxxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalabozxyint=betalabozxyint+betalabzxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+				betalaboyxyint=betalaboyxyint+betalabyxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+				betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				
 				}
-			av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
-            		ch=ch+hx*hy*hz*(betalabozyyint*conj(betalabozyyint))*sin(yj);
-            		ah=ah+hx*hy*hz*(betalabozxxint*conj(betalabozxxint))*sin(yj);
+					av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
             		cv=cv+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
             		bv=bv+hx*hy*hz*sin(yj)*(4*(betalaboxxyint*conj(betalaboxxyint))+betalaboxxxint*(conj(betalaboxyyint))+(betalaboxyyint*(conj(betalaboxxxint))));
             		bv1=bv1+hx*hy*hz*sin(yj)*(2*(betalaboxxxint*(conj(betalaboxxyint)))+2*(betalaboxxyint*(conj(betalaboxxxint))));
             		bv2=bv2+hx*hy*hz*sin(yj)*(2*(betalaboxyyint*(conj(betalaboxxyint)))+2*(betalaboxxyint*(conj(betalaboxyyint))));
-            		bh=bh+hx*hy*hz*sin(yj)*(4*(betalabozxyint*conj(betalabozxyint))+betalabozxxint*(conj(betalabozyyint))+(betalabozyyint*(conj(betalabozxxint))));
-            		bh1=bh1+hx*hy*hz*sin(yj)*(2*(betalabozxxint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozxxint))));
-           		bh2=bh2+hx*hy*hz*sin(yj)*(2*(betalabozyyint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozyyint))));
-			}
+            				
+            		ah=ah+hx*hy*hz*(betalabozxxint*conj(betalabozxxint)*sin(grandtheta)*sin(grandtheta)+betalaboyxxint*conj(betalaboyxxint)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(betalaboyxxint*conj(betalabozxxint)+betalabozxxint*conj(betalaboyxxint)))*sin(yj);			
+            		ch=ch+hx*hy*hz*(betalaboyyyint*conj(betalaboyyyint)*cos(grandtheta)*cos(grandtheta)+betalabozyyint*conj(betalabozyyint)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(betalaboyyyint*conj(betalabozyyint)+betalabozyyint*conj(betalaboyyyint)))*sin(yj);
+            		bh=bh+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(4*betalaboyxyint*conj(betalaboyxyint)+betalaboyxxint*conj(betalaboyyyint)+betalaboyyyint*conj(betalaboyxxint))+sin(grandtheta)*sin(grandtheta)*(4*betalabozxyint*conj(betalabozxyint)+betalabozxxint*conj(betalabozyyint)+betalabozyyint*conj(betalabozxxint))-sin(grandtheta)*cos(grandtheta)*(4*betalaboyxyint*conj(betalabozxyint)+betalaboyxxint*conj(betalabozyyint)+betalabozyyint*conj(betalaboyxxint)+4*betalabozxyint*conj(betalaboyxyint)+betalabozxxint*conj(betalaboyyyint)+betalaboyyyint*conj(betalabozxxint)));
+            		bh1=bh1+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(2*betalaboyxxint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyxxint))+sin(grandtheta)*sin(grandtheta)*(2*betalabozxxint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozxxint))-sin(grandtheta)*cos(grandtheta)*(2*betalabozxxint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozxxint)+2*betalaboyxxint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyxxint)));
+            		bh2=bh2+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(2*betalaboyyyint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyyyint))+sin(grandtheta)*sin(grandtheta)*(2*betalabozyyint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozyyint))-sin(grandtheta)*cos(grandtheta)*(2*betalabozyyint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozyyint)+2*betalaboyyyint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyyyint)));
+            		//ATTENTION A FINIR D4ECRIRE LES EXPRESSIONS DE BH1 ET BH2!
+            		//bh1=bh1+hx*hy*hz*sin(yj)*(2*(betalabozxxint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozxxint))));
+           		    //bh2=bh2+hx*hy*hz*sin(yj)*(2*(betalabozyyint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozyyint))));
+            		//ch=ch+hx*hy*hz*(betalabozyyint*conj(betalabozyyint))*sin(yj);
+            					}
 		}
 	}
 printf("\n"); 
@@ -566,8 +580,8 @@ fichier_grace1 = fopen("out_plot", "w");
 }
 
 fprintf(fichier_out,"                                      \n");
-fprintf(fichier_out,"* POLAR PLOT - CONFIGURATION AT 90° *\n");
-fprintf(fichier_out,"                                    \n");
+fprintf(fichier_out," POLAR PLOT - CONFIGURATION AT %lf °  \n", grandthetadegree);
+fprintf(fichier_out,"                                      \n");
 fprintf(fichier_out,"nombre de dipole = %d  \n",nombredipole);
 fprintf(fichier_out,"*************************\n");
 fprintf(fichier_out,"I2v=%lf  I4v=%lf \n",I2v,I4v);
@@ -592,24 +606,43 @@ fprintf(fichier_grace1,"%lf %lf %lf\n",gammaaa,Iv,Ih);
 fclose(fichier_grace1);
 }
 
-
-
 else if (strcmp(str2,argv[1]) == 0){
-printf("********** Begin calculation polar plot at 180° **************\n");
+printf("Enter the beginning scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_1);
+printf("      ******************************     \n");
+printf("Enter the final scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_2);
+printf("      ******************************     \n");
+grandtheta_1=grandthetadegree_1*2*pi/360;
+grandtheta_2=grandthetadegree_2*2*pi/360;
+printf(" Number of integrale points ? ");
+scanf("%d", &point);
+printf("      ******************************     \n");
+
+
+for (ic=0;ic<point;ic++){
+grandtheta=grandtheta_1+ic*(grandtheta_2-grandtheta_1)/(point-1);
+grandthetadegree=grandtheta*360/(2*pi);
+
+
+
 for (i=0;i<nx;i++){
-	compteur=i*100/nx;
-	printf("calculation in progress: %lf \n",compteur);
+	compteur=(float)(ic*100/point)+((i*100/nx)/point);
+	printf("calculation in progress : %lf pourcent \n",compteur);
 	for (j=0;j<ny;j++){
 		for (kkk=0;kkk<nz;kkk++){
             		xi = 0 + hx/2 + i*hx;
             		yj = 0 + hy/2 + j*hy;
             		zk = 0 + hz/2 + kkk*hz;
-            		betalaboyyyint=0+0*I;
+            		betalabozyyint=0+0*I;
             		betalaboxxxint=0+0*I;
-           		betalaboyxxint=0+0*I;
+           		    betalabozxxint=0+0*I;
             		betalaboxyyint=0+0*I;
             		betalaboxxyint=0+0*I;
+            		betalabozxyint=0+0*I;
             		betalaboyxyint=0+0*I;
+            		betalaboyxxint=0+0*I;
+            		
 			for (ii=0;ii<nombredipole;ii++){
 				betameso[0][0][0]=betamesoxxx[ii];
 				betameso[0][0][1]=betamesoxxy[ii];	
@@ -641,28 +674,50 @@ for (i=0;i<nx;i++){
 				betameso[2][2][1]=betamesozzy[ii];	
 				betameso[2][2][2]=betamesozzz[ii];
 
-				betalaboyyyint=betalaboyyyint+betalabyyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,pi);
-                		betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,0);
-                		betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,0);
-                		betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,0);
-               			betalaboxxyint=betalaboxxyint+betalabxxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,0);
-                		betalaboyxyint=betalaboyxyint+betalabyxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,0);
+				betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalabozxxint=betalabozxxint+betalabzxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+               	betalaboxxyint=betalaboxxyint+betalabxxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+                betalabozxyint=betalabozxyint+betalabzxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+				betalaboyxyint=betalaboyxyint+betalabyxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+				betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				
 				}
-			av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
-            		ch=ch+hx*hy*hz*(betalaboyyyint*conj(betalaboyyyint))*sin(yj);
-            		ah=ah+hx*hy*hz*(betalaboyxxint*conj(betalaboyxxint))*sin(yj);
+					av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
             		cv=cv+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
             		bv=bv+hx*hy*hz*sin(yj)*(4*(betalaboxxyint*conj(betalaboxxyint))+betalaboxxxint*(conj(betalaboxyyint))+(betalaboxyyint*(conj(betalaboxxxint))));
             		bv1=bv1+hx*hy*hz*sin(yj)*(2*(betalaboxxxint*(conj(betalaboxxyint)))+2*(betalaboxxyint*(conj(betalaboxxxint))));
             		bv2=bv2+hx*hy*hz*sin(yj)*(2*(betalaboxyyint*(conj(betalaboxxyint)))+2*(betalaboxxyint*(conj(betalaboxyyint))));
-            		bh=bh+hx*hy*hz*sin(yj)*(4*(betalaboyxyint*conj(betalaboyxyint))+betalaboyxxint*(conj(betalaboyyyint))+(betalaboyyyint*(conj(betalaboyxxint))));
-            		bh1=bh1+hx*hy*hz*sin(yj)*(2*(betalaboyxxint*(conj(betalaboyxyint)))+2*(betalaboyxyint*(conj(betalaboyxxint))));
-           		bh2=bh2+hx*hy*hz*sin(yj)*(2*(betalaboyyyint*(conj(betalaboyxyint)))+2*(betalaboyxyint*(conj(betalaboyyyint))));
-			}
+            				
+            		ah=ah+hx*hy*hz*(betalabozxxint*conj(betalabozxxint)*sin(grandtheta)*sin(grandtheta)+betalaboyxxint*conj(betalaboyxxint)*cos(grandtheta)*cos(grandtheta)-sin(grandtheta)*cos(grandtheta)*(betalaboyxxint*conj(betalabozxxint)+betalabozxxint*conj(betalaboyxxint)))*sin(yj);			
+            		ch=ch+hx*hy*hz*(betalaboyyyint*conj(betalaboyyyint)*cos(grandtheta)*cos(grandtheta)+betalabozyyint*conj(betalabozyyint)*sin(grandtheta)*sin(grandtheta)-sin(grandtheta)*cos(grandtheta)*(betalaboyyyint*conj(betalabozyyint)+betalabozyyint*conj(betalaboyyyint)))*sin(yj);
+            		bh=bh+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(4*betalaboyxyint*conj(betalaboyxyint)+betalaboyxxint*conj(betalaboyyyint)+betalaboyyyint*conj(betalaboyxxint))+sin(grandtheta)*sin(grandtheta)*(4*betalabozxyint*conj(betalabozxyint)+betalabozxxint*conj(betalabozyyint)+betalabozyyint*conj(betalabozxxint))-sin(grandtheta)*cos(grandtheta)*(4*betalaboyxyint*conj(betalabozxyint)+betalaboyxxint*conj(betalabozyyint)+betalabozyyint*conj(betalaboyxxint)+4*betalabozxyint*conj(betalaboyxyint)+betalabozxxint*conj(betalaboyyyint)+betalaboyyyint*conj(betalabozxxint)));
+            		
+            		bh1=bh1+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(2*betalaboyxxint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyxxint))+sin(grandtheta)*sin(grandtheta)*(2*betalabozxxint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozxxint))-sin(grandtheta)*cos(grandtheta)*(2*betalabozxxint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozxxint)+2*betalaboyxxint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyxxint)));
+            		bh2=bh2+hx*hy*hz*sin(yj)*(cos(grandtheta)*cos(grandtheta)*(2*betalaboyyyint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyyyint))+sin(grandtheta)*sin(grandtheta)*(2*betalabozyyint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozyyint))-sin(grandtheta)*cos(grandtheta)*(2*betalabozyyint*conj(betalabozxyint)+2*betalabozxyint*conj(betalabozyyint)+2*betalaboyyyint*conj(betalaboyxyint)+2*betalaboyxyint*conj(betalaboyyyint)));
+            		
+            		//ATTENTION A FINIR D4ECRIRE LES EXPRESSIONS DE BH1 ET BH2!
+            		//bh1=bh1+hx*hy*hz*sin(yj)*(2*(betalabozxxint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozxxint))));
+           		    //bh2=bh2+hx*hy*hz*sin(yj)*(2*(betalabozyyint*(conj(betalabozxyint)))+2*(betalabozxyint*(conj(betalabozyyint))));
+            		//ch=ch+hx*hy*hz*(betalabozyyint*conj(betalabozyyint))*sin(yj);
+            					}
 		}
 	}
+}	
 
+av=av/point;
+cv=cv/point;
+bv=bv/point;
+bv1=bv1/point;
+bv2=bv2/point;
+ah=ah/point;
+ch=ch/point;
+bh=bh/point;
+bh1=bh1/point;
+bh2=bh2/point;
+	
+printf("\n"); 
 printf("**********calculation complete ************\n");           
 printf("av = %lf\n",av);
 printf("bv = %lf\n",bv);
@@ -692,10 +747,11 @@ fichier_grace1 = fopen("out_plot", "w");
 	printf("impossible d'ouvrir le fichier pour ecrire gnuplot!");
 }
 
-fprintf(fichier_out,"                                   \n");
-fprintf(fichier_out,"* POLAR PLOT - CONFIGURATION AT 180° *\n");
-fprintf(fichier_out,"                                   \n");
+fprintf(fichier_out,"                                      \n");
+fprintf(fichier_out," POLAR PLOT - CONFIGURATION AT %lf °  \n", grandthetadegree);
+fprintf(fichier_out,"                                      \n");
 fprintf(fichier_out,"nombre de dipole = %d  \n",nombredipole);
+fprintf(fichier_out,"*************************\n");
 fprintf(fichier_out,"I2v=%lf  I4v=%lf \n",I2v,I4v);
 fprintf(fichier_out,"I2h=%lf  I4h=%lf \n",I2h,I4h);
 fprintf(fichier_out,"*************************\n");
@@ -714,8 +770,13 @@ Ih=ah*(nomc*nomc*nomc*nomc)+bh*(nomc*nomc*noms*noms)+ch*(noms*noms*noms*noms)+bh
 fprintf(fichier_grace1,"%lf %lf %lf\n",gammaaa,Iv,Ih);
 }
 
+
 fclose(fichier_grace1);
 }
+
+
+
+
 
 else if (strcmp(str3,argv[1]) == 0){
 
@@ -732,7 +793,7 @@ fichier_grace1 = fopen("out_plot", "w");
 	printf("impossible d'ouvrir le fichier pour ecrire gnuplot!");
 }
 fprintf(fichier_grace1," grandtheta   IH(0°)  IH(90°)  IV(0°)  IV(90°) \n");
-printf("Enter the number of points between 0 and Pi for the angular SHS analysis ?"); 
+printf("Enter the number of points between 0 and 180° for the angular SHS analysis ?"); 
 scanf("%d", &pas2);
 mmmf=2*(pas2)+1;
 printf("********** Begin SHS Angular Distribution calculation**************\n");
@@ -740,8 +801,8 @@ for (mmm=0;mmm<mmmf;mmm++){
 	grandtheta=-pi+mmm*(pi/pas2);
         grandthetadegree=(grandtheta*360)/(2*pi);
         printf("angle value: %lf \n",grandthetadegree);
-        beta_y_moy_0=0;
-        beta_z_moy_0=0;
+        beta_y_moy_0=0;  //ah A CHANGER!!
+        beta_z_moy_0=0;  //ch
         beta_y_moy_90=0;
         beta_z_moy_90=0;
         beta_xxx_moy=0;
@@ -754,12 +815,16 @@ for (mmm=0;mmm<mmmf;mmm++){
                 xi = 0 + hx/2 + i*hx;
                 yj = 0 + hy/2 + j*hy;
                 zk = 0 + hz/2 + kkk*hz;
-		betalabozyyint=0+0*I;
+                    
+                
+				betalabozyyint=0+0*I;
             	betalabozxxint=0+0*I;
-           	betalaboyxxint=0+0*I;
+           		betalaboyxxint=0+0*I;
             	betalaboyyyint=0+0*I;
             	betalaboxyyint=0+0*I;
             	betalaboxxxint=0+0*I;
+            	
+            	
 		for (ii=0;ii<nombredipole;ii++){
 			betameso[0][0][0]=betamesoxxx[ii];
 			betameso[0][0][1]=betamesoxxy[ii];	
@@ -792,29 +857,29 @@ for (mmm=0;mmm<mmmf;mmm++){
 			betameso[2][2][2]=betamesozzz[ii];
 
 			betalaboyyyint=betalaboyyyint+betalabyyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-                	betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-                	betalabozxxint=betalabozxxint+betalabzxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-                	betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-               		betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-                	betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-				
+            betalaboxxxint=betalaboxxxint+betalabxxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+            betalabozxxint=betalabozxxint+betalabzxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+            betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+            betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+			betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				}
-		beta_xxx_moy=beta_xxx_moy+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
+				beta_xxx_moy=beta_xxx_moy+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
                 beta_xyy_moy=beta_xyy_moy+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
-                beta_y_moy_0=beta_y_moy_0+hx*hy*hz*(betalaboyxxint*(cos(grandtheta)*cos(grandtheta))-betalabozxxint*cos(grandtheta)*sin(grandtheta))*conj(betalaboyxxint*(cos(grandtheta)*cos(grandtheta))-betalabozxxint*cos(grandtheta)*sin(grandtheta));
-                beta_z_moy_0=beta_z_moy_0+hx*hy*hz*(-betalaboyxxint*(cos(grandtheta)*sin(grandtheta))+betalabozxxint*(sin(grandtheta)*sin(grandtheta)))*conj(-betalaboyxxint*(cos(grandtheta)*sin(grandtheta))+betalabozxxint*(sin(grandtheta)*sin(grandtheta)));
-                beta_y_moy_90=beta_y_moy_90+hx*hy*hz*(betalaboyyyint*(cos(grandtheta)*cos(grandtheta))-betalabozyyint*cos(grandtheta)*sin(grandtheta))*conj(betalaboyyyint*(cos(grandtheta)*cos(grandtheta))-betalabozyyint*cos(grandtheta)*sin(grandtheta));
-                beta_z_moy_90=beta_z_moy_90+hx*hy*hz*(-betalaboyyyint*(cos(grandtheta)*sin(grandtheta))+betalabozyyint*(sin(grandtheta)*sin(grandtheta)))*conj(-betalaboyyyint*(cos(grandtheta)*sin(grandtheta))+betalabozyyint*(sin(grandtheta)*sin(grandtheta)));
+                beta_y_moy_0=beta_y_moy_0+hx*hy*hz*(betalaboyxxint*cos(grandtheta)*cos(grandtheta)*conj(betalaboyxxint)+sin(grandtheta)*sin(grandtheta)*betalabozxxint*conj(betalabozxxint)-cos(grandtheta)*sin(grandtheta)*(betalabozxxint*conj(betalaboyxxint)+betalaboyxxint*conj(betalabozxxint)))*sin(yj);
+                beta_z_moy_0=beta_z_moy_0+hx*hy*hz*(betalaboyyyint*cos(grandtheta)*cos(grandtheta)*conj(betalaboyyyint)+sin(grandtheta)*sin(grandtheta)*betalabozyyint*conj(betalabozyyint)-cos(grandtheta)*sin(grandtheta)*(betalabozyyint*conj(betalaboyyyint)+betalaboyyyint*conj(betalabozyyint)))*sin(yj);
+                
 			}
 		}
 	}
-    IH_0=creal(csqrt(beta_y_moy_0*beta_y_moy_0+beta_z_moy_0*beta_z_moy_0));
-    IH_90=creal(csqrt(beta_y_moy_90*beta_y_moy_90+beta_z_moy_90*beta_z_moy_90));
+    
+    
+    IH_0=beta_y_moy_0;
+    IH_90=beta_z_moy_0;
     IV_0=beta_xxx_moy;
     IV_90=beta_xyy_moy;
     printf("IH_0=%lf    IH_90=%lf   IV_0=%lf    IV_90=%lf \n",IH_0,IH_90,IV_0,IV_90);
-    fprintf(fichier_out," %lf    %lf   %lf   %lf   %lf \n",grandtheta,IH_0,IH_90,IV_0,IV_90);
-    fprintf(fichier_grace1," %lf    %lf   %lf   %lf   %lf \n",grandtheta,IH_0,IH_90,IV_0,IV_90);
+    fprintf(fichier_out," %lf    %lf   %lf   %lf   %lf \n",grandthetadegree,IH_0,IH_90,IV_0,IV_90);
+    fprintf(fichier_grace1," %lf    %lf   %lf   %lf   %lf \n",grandthetadegree,IH_0,IH_90,IV_0,IV_90);
 }
 printf("calculation finished \n");
 fclose(fichier_out);
@@ -824,11 +889,11 @@ fclose(fichier_grace1);
 }
 
 else {
-printf("--------------------- --------------------------------------------------\n"); 
-printf("             ERROR in the name of the keyword                           \n"); 
-printf("USE ONLY polarplot_90 OR polarplot_180 OR angle_scattering  !!  \n"); 
-printf(" ! no calculation has been done ! Retry with the correct keyword        \n");
-printf("------------------------------------------------------------------------\n"); 
+printf("--------------------- ----------------------------------------------------\n"); 
+printf("             ERROR in the name of the keyword                             \n"); 
+printf(" USE ONLY polarplot_single OR polarplot_integrate OR angle_scattering  !! \n"); 
+printf(" ! no calculation has been done ! Retry with the correct keyword          \n");
+printf("--------------------------------------------------------------------------\n"); 
 }
 
 
