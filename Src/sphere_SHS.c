@@ -1,5 +1,5 @@
 /*********************************************************************************
-******************PROGRAM sphere_SHS***************************************************
+******************PROGRAM sphere_SHS_angle_scattering***************************************************
 **********************************************************************************
    Py_SHS - An open source software about Second Harmonic Scattering 
    developed at Institut Charles Gerhardt Montpellier - ENSCM
@@ -167,7 +167,7 @@ uuu=R*R*kimesoijk(phic,thetac,0,2,0,0,beta)*sin(thetac)*cexp(((-2*petitk+grandk*
     return uuu;
 }
 
-double grandgammayxx(double R,double phic,double thetac,double grandtheta,double beta[3][3][3],double complex petitk,double complex grandk){
+double complex grandgammayxx(double R,double phic,double thetac,double grandtheta,double beta[3][3][3],double complex petitk,double complex grandk){
 double complex uuu;
 uuu=R*R*kimesoijk(phic,thetac,0,1,0,0,beta)*sin(thetac)*cexp(((-2*petitk+grandk*cos(grandtheta))*R*cos(thetac)+(grandk*sin(grandtheta)*R*sin(thetac)*sin(phic)))*I);
     return uuu;
@@ -234,7 +234,7 @@ printf("********************************************************\n");
 printf("********       Enter the input parameters     **********\n");
 printf("********************************************************\n");
 
-int i,j,k,kkk,ii,iii;
+int i,j,k,kkk,ii,iii,ic;
 int nom;
 double complex grandk,petitk;
 double pi=3.1415926535897;
@@ -249,11 +249,11 @@ double compteur;
 double complex grandgammazxx_moy,grandgammayyy_moy,grandgammazyy_moy,grandgammaxxx_moy,grandgammayxx_moy,grandgammayxy_moy,grandgammaxyy_moy,grandgammaxxy_moy,grandgammazxy_moy;
 double I4v,I2v,I2h,I4h;
 double Iv,Ih,gammaaa,nomc,noms,deltax,deltay,deltaz;
-char str1[20]="polarplot_90";
-char str2[20]="polarplot_0";
+char str1[20]="polarplot_single";
+char str2[20]="polarplot_integrate";
 char str3[20]="angle_scattering";
-double grandtheta,grandthetadegree,IH_0,IH_90,IV_0,IV_90;
-int pas2,mmm,mmmf;
+double grandtheta,grandthetadegree,grandtheta_1,grandtheta_2,grandthetadegree_1,grandthetadegree_2,IH_0,IH_90,IV_0,IV_90;
+int pas2,mmm,mmmf,point;
 double beta_y_moy_0,beta_z_moy_0,beta_y_moy_90,beta_z_moy_90,beta_xxx_moy,beta_xyy_moy;
 double complex n;
 double realpartn,imagpartn;
@@ -284,6 +284,8 @@ printf("      ******************************     \n");
 printf("Enter the radius of the sphere in nm? ");
 scanf("%lf", &R);
 printf("      ******************************     \n");
+
+
 if( argc == 4 ) {
       printf("The input ki(2) file is %s,  and the output file is %s \n", argv[2], argv[3]);
    }
@@ -292,7 +294,7 @@ if( argc == 4 ) {
    }
    else {
       printf("Computation failed: \n");
-      printf("3 arguments expected : the keyword of the calculation, the Ki(2) inputfile and the outputfile. \n");
+      printf("3 arguments expected : the keyword, the Ki(2) inputfile and the outputfile. \n");
       printf("For more details see the documentation \n");
    }
 
@@ -402,10 +404,16 @@ fprintf(fichier_out,"    zyx=%lf   zyy=%lf   zyz= %lf  \n",beta[2][1][0],beta[2]
 fprintf(fichier_out,"    zzx=%lf   zzy=%lf   zzz= %lf  \n",beta[2][2][0],beta[2][2][1],beta[2][2][2]);
 fprintf(fichier_out,"\n");
 fprintf(fichier_out,"*******************************************************\n");
+
 if (strcmp(str1,argv[1]) == 0){
-printf("********** Begin calculation for sphere polar plot at 90° ***********\n");
+
+printf("Enter the scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree);
+printf("      ******************************     \n");
+grandtheta=grandthetadegree*2*pi/360;
+printf("********** Begin calculation for sphere polar plot at %lf ° ********\n", grandthetadegree);
 //printf("calculation in progress:");
-grandtheta=pisur2;
+//grandtheta=pisur2;
 
 av=0;
 cv=0;
@@ -414,9 +422,9 @@ ah=0;
 bh=0;
 ch=0;
 
-hx=(2*pi)/(pas);
+hx=(2*pi)/(2*pas);
 hy=(pi)/(pas);
-nx=pas;
+nx=2*pas;
 ny=pas;
 
 grandgammazxx_moy=0+0*I;
@@ -458,13 +466,10 @@ printf("grandgammaxxy %lf +I%lf \n",creal(grandgammaxxy_moy),cimag(grandgammaxxy
 av=(grandgammaxxx_moy*conj(grandgammaxxx_moy));
 cv=(grandgammaxyy_moy*conj(grandgammaxyy_moy));
 bv=(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
-bh=(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-ah=(csqrt(Iy0*Iy0+Iz0*Iz0));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
-ch=(csqrt(Iy90*Iy90+Iz90*Iz90));
+ah=grandgammayxx_moy*conj(grandgammayxx_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazxx_moy*conj(grandgammazxx_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy)));
+ch=grandgammayyy_moy*conj(grandgammayyy_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazyy_moy*conj(grandgammazyy_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy)));
+bh=cos(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy))-cos(grandtheta)*sin(grandtheta)*(4*grandgammayxy_moy*conj(grandgammazxy_moy)+4*grandgammazxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayxx_moy)+grandgammazxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammazxx_moy));
+
 
 printf("\n"); 
 printf("**********calculation complete ************\n");           
@@ -491,11 +496,11 @@ fichier_grace1 = fopen("out_plot", "w");
    if (fichier_grace1==NULL){
 	printf("impossible d'ouvrir le fichier pour ecrire gnuplot!");
 }
-fprintf(fichier_out,"********************************************\n");
-fprintf(fichier_out,"                                            \n");
-fprintf(fichier_out,"* Sphere POLAR PLOT - CONFIGURATION AT 90° *\n");
-fprintf(fichier_out,"                                            \n");
-fprintf(fichier_out,"********************************************\n");
+fprintf(fichier_out,"*********************************************\n");
+fprintf(fichier_out,"                                             \n");
+fprintf(fichier_out,"* Sphere POLAR PLOT - CONFIGURATION AT %lf ° \n",grandthetadegree);
+fprintf(fichier_out,"                                             \n");
+fprintf(fichier_out,"*********************************************\n");
 
 
 
@@ -503,6 +508,7 @@ fprintf(fichier_out,"*************************\n");
 fprintf(fichier_out,"I2v=%lf  I4v=%lf \n",I2v,I4v);
 fprintf(fichier_out,"I2h=%lf  I4h=%lf \n",I2h,I4h);
 fprintf(fichier_out,"*************************\n");
+fprintf(fichier_out,"scattered angle= %lf °   \n",grandthetadegree);
 fprintf(fichier_out,"av=%lf   bv=%lf   bv1=%lf  bv2=%lf  cv= %lf \n",av,bv,bv1,bv2,cv);
 fprintf(fichier_out,"ah=%lf   bh=%lf   bh1=%lf  bh2=%lf  ch= %lf \n",ah,bh,bh1,bh2,ch);
 
@@ -521,13 +527,22 @@ printf("------------------------------------------------------------------------
 printf("calculation finished, to plot the results, open the outplot file with gnuplot\n");
 printf("-----------------------------------------------------------------------------\n");
 fclose(fichier_grace1);
+
 }
 
-
 else if (strcmp(str2,argv[1]) == 0){
-printf("********** Begin calculation for sphere polar plot at 0° (transmission) ***********\n");
-//printf("calculation in progress:");
-grandtheta=0;
+
+printf("Enter the beginning scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_1);
+printf("      ******************************     \n");
+printf("Enter the final scattered angle in degree (0°=transmission) ? ");
+scanf("%lf", &grandthetadegree_2);
+printf("      ******************************     \n");
+grandtheta_1=grandthetadegree_1*2*pi/360;
+grandtheta_2=grandthetadegree_2*2*pi/360;
+printf(" Number of integrale points ? ");
+scanf("%d", &point);
+printf("      ******************************     \n");
 
 av=0;
 cv=0;
@@ -536,10 +551,17 @@ ah=0;
 bh=0;
 ch=0;
 
-hx=(2*pi)/(pas);
+hx=(2*pi)/(2*pas);
 hy=(pi)/(pas);
-nx=pas;
+nx=2*pas;
 ny=pas;
+
+for (ic=0;ic<point;ic++){
+grandtheta=grandtheta_1+ic*(grandtheta_2-grandtheta_1)/(point-1);
+grandthetadegree=grandtheta*360/(2*pi);
+
+printf("********** Begin calculation for sphere polar plot at %lf ° ********\n", grandthetadegree);
+
 
 grandgammazxx_moy=0+0*I;
 grandgammayyy_moy=0+0*I;
@@ -557,7 +579,7 @@ for (i=0;i<nx;i++){
 	printf("calculation in progress : %lf pourcent \n",compteur);
 	for (j=0;j<ny;j++){
             	xi = (0 + hx/2 + i*hx);
-            	yj = (0 + hy/2 + j*hy);
+            	yj =( 0 + hy/2 + j*hy);
 		    grandgammazxx_moy=grandgammazxx_moy+hx*hy*grandgammazxx(R,xi,yj,grandtheta,beta,petitk,grandk);
        		grandgammaxxx_moy=grandgammaxxx_moy+hx*hy*grandgammaxxx(R,xi,yj,grandtheta,beta,petitk,grandk);
         	grandgammayxx_moy=grandgammayxx_moy+hx*hy*grandgammayxx(R,xi,yj,grandtheta,beta,petitk,grandk);
@@ -565,22 +587,32 @@ for (i=0;i<nx;i++){
        		grandgammazyy_moy=grandgammazyy_moy+hx*hy*grandgammazyy(R,xi,yj,grandtheta,beta,petitk,grandk);
         	grandgammayyy_moy=grandgammayyy_moy+hx*hy*grandgammayyy(R,xi,yj,grandtheta,beta,petitk,grandk);
         	grandgammaxxy_moy=grandgammaxxy_moy+hx*hy*grandgammaxxy(R,xi,yj,grandtheta,beta,petitk,grandk);
-        	//printf("grandgammaxxy_moy: %lf \n",grandgammaxxy_moy);
         	grandgammayxy_moy=grandgammayxy_moy+hx*hy*grandgammayxy(R,xi,yj,grandtheta,beta,petitk,grandk);
        		grandgammazxy_moy=grandgammazxy_moy+hx*hy*grandgammazxy(R,xi,yj,grandtheta,beta,petitk,grandk);
+       		//printf("grandgammaxxy_moy: %lf+I%lf \n",creal(grandgammaxxy_moy),cimag(grandgammaxxy_moy));
 			}
            }
+printf("grandgammazxx %lf +I%lf \n",creal(grandgammazxx_moy),cimag(grandgammazxx_moy));
+printf("grandgammaxxx %lf +I%lf \n",creal(grandgammaxxx_moy),cimag(grandgammaxxx_moy));
+printf("grandgammayxx %lf +I%lf \n",creal(grandgammayxx_moy),cimag(grandgammayxx_moy));
+printf("grandgammazyy %lf +I%lf \n",creal(grandgammazyy_moy),cimag(grandgammazyy_moy));
+printf("grandgammayyy %lf +I%lf \n",creal(grandgammayyy_moy),cimag(grandgammayyy_moy));
+printf("grandgammaxxy %lf +I%lf \n",creal(grandgammaxxy_moy),cimag(grandgammaxxy_moy));
 
-av=creal(grandgammaxxx_moy*conj(grandgammaxxx_moy));
-cv=creal(grandgammaxyy_moy*conj(grandgammaxyy_moy));
-bv=creal(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
-bh=creal(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-ah=creal(csqrt(Iy0*Iy0+Iz0*Iz0));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
-ch=creal(csqrt(Iy90*Iy90+Iz90*Iz90));
+av=av+(grandgammaxxx_moy*conj(grandgammaxxx_moy));
+cv=cv+(grandgammaxyy_moy*conj(grandgammaxyy_moy));
+bv=bv+(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
+ah=ah+(grandgammayxx_moy*conj(grandgammayxx_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazxx_moy*conj(grandgammazxx_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy))));
+ch=ch+(grandgammayyy_moy*conj(grandgammayyy_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazyy_moy*conj(grandgammazyy_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy))));
+bh=bh+(cos(grandtheta)*cos(grandtheta)*(4*grandgammayxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammayxx_moy))+sin(grandtheta)*sin(grandtheta)*(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy))-cos(grandtheta)*sin(grandtheta)*(4*grandgammayxy_moy*conj(grandgammazxy_moy)+4*grandgammazxy_moy*conj(grandgammayxy_moy)+grandgammayxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayxx_moy)+grandgammazxx_moy*conj(grandgammayyy_moy)+grandgammayyy_moy*conj(grandgammazxx_moy)));
+
+}
+av=av/point;
+cv=cv/point;
+bv=bv/point;
+ah=ah/point;
+ch=ch/point;
+bh=bh/point;
 
 printf("\n"); 
 printf("**********calculation complete ************\n");           
@@ -607,13 +639,19 @@ fichier_grace1 = fopen("out_plot", "w");
    if (fichier_grace1==NULL){
 	printf("impossible d'ouvrir le fichier pour ecrire gnuplot!");
 }
-fprintf(fichier_out,"********************************************\n");
-fprintf(fichier_out,"                                            \n");
-fprintf(fichier_out,"* Sphere POLAR PLOT - CONFIGURATION AT 0° * \n");
-fprintf(fichier_out,"                                            \n");
+fprintf(fichier_out,"***********************************************************************n");
+fprintf(fichier_out,"                                                                      \n");
+fprintf(fichier_out,"* Sphere POLAR PLOT - Average between %lf ° and %lf ° scattered angle \n",grandthetadegree_1,grandthetadegree_2);
+fprintf(fichier_out,"                                                                      \n");
+fprintf(fichier_out,"**********************************************************************\n");
+
+
+
+fprintf(fichier_out,"*************************\n");
 fprintf(fichier_out,"I2v=%lf  I4v=%lf \n",I2v,I4v);
 fprintf(fichier_out,"I2h=%lf  I4h=%lf \n",I2h,I4h);
-fprintf(fichier_out,"*********************************************\n");
+fprintf(fichier_out,"*************************\n");
+//fprintf(fichier_out,"scattered angle= %lf °   \n",grandthetadegree);
 fprintf(fichier_out,"av=%lf   bv=%lf   bv1=%lf  bv2=%lf  cv= %lf \n",av,bv,bv1,bv2,cv);
 fprintf(fichier_out,"ah=%lf   bh=%lf   bh1=%lf  bh2=%lf  ch= %lf \n",ah,bh,bh1,bh2,ch);
 
@@ -632,10 +670,15 @@ printf("------------------------------------------------------------------------
 printf("calculation finished, to plot the results, open the outplot file with gnuplot\n");
 printf("-----------------------------------------------------------------------------\n");
 fclose(fichier_grace1);
+
 }
 
-else if (strcmp(str3,argv[1]) == 0){
 
+
+
+
+
+else if (strcmp(str3,argv[1]) == 0){
 fprintf(fichier_out,"***************************************************************\n");
 fprintf(fichier_out,"                                            \n");
 fprintf(fichier_out,"*****            Sphere SHS angular distribution          *****\n");
@@ -656,9 +699,9 @@ for (mmm=0;mmm<mmmf;mmm++){
 	grandtheta=-pi+mmm*(pi/pas2);
     grandthetadegree=(grandtheta*360)/(2*pi);
     printf("angle value: %lf \n",grandthetadegree);
-	hx=(2*pi)/(pas);
+	hx=(2*pi)/(2*pas);
 	hy=(pi)/(pas);
-	nx=pas;
+	nx=2*pas;
 	ny=pas;
 
 	grandgammazxx_moy=0+0*I;
@@ -686,28 +729,27 @@ for (mmm=0;mmm<mmmf;mmm++){
         	grandgammayyy_moy=grandgammayyy_moy+hx*hy*grandgammayyy(R,xi,yj,grandtheta,beta,petitk,grandk);
         	grandgammaxxy_moy=grandgammaxxy_moy+hx*hy*grandgammaxxy(R,xi,yj,grandtheta,beta,petitk,grandk);
         	//printf("grandgammaxxy_moy: %lf \n",grandgammaxxy_moy);
-        	grandgammayxy_moy=grandgammayxy_moy+hx*hy*grandgammayxy(R,xi,yj,grandtheta,beta,petitk,grandk);
-       		grandgammazxy_moy=grandgammazxy_moy+hx*hy*grandgammazxy(R,xi,yj,grandtheta,beta,petitk,grandk);
+        	//grandgammayxy_moy=grandgammayxy_moy+hx*hy*grandgammayxy(R,xi,yj,grandtheta,beta,petitk,grandk);
+       		//grandgammazxy_moy=grandgammazxy_moy+hx*hy*grandgammazxy(R,xi,yj,grandtheta,beta,petitk,grandk);
 			}
            }
 
 IV_0=(grandgammaxxx_moy*conj(grandgammaxxx_moy));
 IV_90=(grandgammaxyy_moy*conj(grandgammaxyy_moy));
-//bv=creal(4*grandgammaxxy_moy*conj(grandgammaxxy_moy)+grandgammaxxx_moy*conj(grandgammaxyy_moy)+grandgammaxyy_moy*conj(grandgammaxxx_moy));
-//bh=creal(4*grandgammazxy_moy*conj(grandgammazxy_moy)+grandgammazxx_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammazxx_moy));
-Iy0=(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayxx_moy*cos(grandtheta)*cos(grandtheta)-grandgammazxx_moy*cos(grandtheta)*sin(grandtheta));
-Iz0=(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayxx_moy*cos(grandtheta)*sin(grandtheta)+grandgammazxx_moy*sin(grandtheta)*sin(grandtheta));
-IH_0=creal(csqrt(Iy0*Iy0+Iz0*Iz0));
-Iy90=(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta))*conj(grandgammayyy_moy*cos(grandtheta)*cos(grandtheta)-grandgammazyy_moy*cos(grandtheta)*sin(grandtheta));
-Iz90=(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta))*conj(-grandgammayyy_moy*cos(grandtheta)*sin(grandtheta)+grandgammazyy_moy*sin(grandtheta)*sin(grandtheta));
-IH_90=creal(csqrt(Iy90*Iy90+Iz90*Iz90));
+
+ah=grandgammayxx_moy*conj(grandgammayxx_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazxx_moy*conj(grandgammazxx_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayxx_moy*conj(grandgammazxx_moy)+grandgammazxx_moy*conj(grandgammayxx_moy)));
+IH_0=ah;
+
+ch=grandgammayyy_moy*conj(grandgammayyy_moy)*(cos(grandtheta)*cos(grandtheta))+(sin(grandtheta)*sin(grandtheta)*grandgammazyy_moy*conj(grandgammazyy_moy))-(cos(grandtheta)*sin(grandtheta)*(grandgammayyy_moy*conj(grandgammazyy_moy)+grandgammazyy_moy*conj(grandgammayyy_moy)));
+IH_90=ch;
        
 printf("IH_0=%lf    IH_90=%lf   IV_0=%lf    IV_90=%lf \n",IH_0,IH_90,IV_0,IV_90);
-fprintf(fichier_out," %lf    %lf   %lf   %lf   %lf \n",grandtheta,IH_0,IH_90,IV_0,IV_90);
-fprintf(fichier_grace1," %lf    %lf   %lf   %lf   %lf \n",grandtheta,IH_0,IH_90,IV_0,IV_90); 
+fprintf(fichier_out," %lf    %lf   %lf   %lf   %lf \n",grandthetadegree,IH_0,IH_90,IV_0,IV_90);
+fprintf(fichier_grace1," %lf    %lf   %lf   %lf   %lf \n",grandthetadegree,IH_0,IH_90,IV_0,IV_90); 
        
        
        }
+       
 printf("-----------------------------------------------------------------------------\n");       
 printf("calculation finished, to plot the results, open the outplot file with gnuplot\n");
 printf("-----------------------------------------------------------------------------\n");
@@ -716,15 +758,6 @@ fclose(fichier_grace1);
 
 
 }
-
-else {
-printf("--------------------- --------------------------------------------------\n"); 
-printf("             ERROR in the name of the keyword                           \n"); 
-printf("USE ONLY polarplot_90 OR polarplot_180 OR angle_scattering  !!  \n"); 
-printf(" ! no calculation has been done ! Retry with the correct keyword        \n");
-printf("------------------------------------------------------------------------\n"); 
-}
-
 
 
 
