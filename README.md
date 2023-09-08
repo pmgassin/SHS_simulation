@@ -1,14 +1,16 @@
 # SHS_simulation
 SHS_simulation is a collection of different programs which can compute the Second Harmonic Intensity Scattered by a supramolecular structure.
 Don't forget to cite this work:              
-J. Chem. Inf. Model. 2020, 60, 12, pp 5912–5917
+J. Chem. Inf. Model. 2020, 60, 12, 5912–5917
+J. Chem. Inf. Model. 2021, 61, 11, 5719
+
 
 **********************************************************************************
-#    PySHS V2 - An open source software about Second Harmonic Scattering 
+#    PySHS V2.2 - An open source software about Second Harmonic Scattering 
 #   developed at Institut Charles Gerhardt Montpellier - ENSCM
 #   Dr Pierre-Marie GASSIN
 #   Dr Gassin GASSIN
-#    (june 2021)  
+#    (september 2023)  
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -86,14 +88,14 @@ Depending of the pySHS program used, it requires one (sphere_SHS) or two input f
  to launch, the SHS program, enter:
 ./Work/SHS <Keyword> <inputbeta> <input orientation> <outputfile>
 
-where <Keyword> is equal to "polarplot_90" or "polarplot_180" or "angle_scattering" depending on the computation you want to perform.
+where <Keyword> is equal to "polarplot_single" or "polarplot_integrate" or "angle_scattering" depending on the computation you want to perform.
 inputbeta, input_orientation and outputfile are respectively the name of the input file containing the hyperpolarizability of the molecule, the  name of the input file containing the orientation and position of the molecules and the output file.
 
 
-to launch, the spher_SHS program, enter:
+to launch, the sphere_SHS program, enter:
 
 ./Work/sphere_SHS <Keyword> <inputbeta> <outputfile>
 
-where <Keyword> is equal to "polarplot_90" or "polarplot_180" or "angle_scattering" depending on the computation you want to perform.
+where <Keyword> is equal to "polarplot_single" or "polarplot_integrate" or "angle_scattering" depending on the computation you want to perform.
 inputbeta, and outputfile are respectively the name of the input file containing the hyperpolarizability of the molecule,  and the output file. 
 
