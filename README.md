@@ -6,11 +6,11 @@ J. Chem. Inf. Model. 2021, 61, 11, 5719
 
 
 **********************************************************************************
-#    PySHS V2.2 - An open source software about Second Harmonic Scattering 
+#    PySHS V2.3 - An open source software about Second Harmonic Scattering 
 #   developed at Institut Charles Gerhardt Montpellier - ENSCM
 #   Dr Pierre-Marie GASSIN
 #   Dr Gassin GASSIN
-#    (september 2023)  
+#    (June 2024)  
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
