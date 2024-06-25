@@ -489,6 +489,7 @@ for (i=0;i<nx;i++){
             		betalabozxyint=0+0*I;
             		betalaboyxyint=0+0*I;
             		betalaboyxxint=0+0*I;
+            		betalaboyyyint=0+0*I;
             		
 			for (ii=0;ii<nombredipole;ii++){
 				betameso[0][0][0]=betamesoxxx[ii];
@@ -529,7 +530,7 @@ for (i=0;i<nx;i++){
                 betalabozxyint=betalabozxyint+betalabzxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				betalaboyxyint=betalaboyxyint+betalabyxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-				
+				betalaboyyyint=betalaboyyyint+betalabyyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				}
 					av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
             		cv=cv+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
@@ -642,6 +643,7 @@ for (i=0;i<nx;i++){
             		betalabozxyint=0+0*I;
             		betalaboyxyint=0+0*I;
             		betalaboyxxint=0+0*I;
+            		betalaboyyyint=0+0*I;
             		
 			for (ii=0;ii<nombredipole;ii++){
 				betameso[0][0][0]=betamesoxxx[ii];
@@ -682,7 +684,7 @@ for (i=0;i<nx;i++){
                 betalabozxyint=betalabozxyint+betalabzxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				betalaboyxyint=betalaboyxyint+betalabyxy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
-				
+				betalaboyyyint=betalaboyyyint+betalabyyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				}
 					av=av+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
             		cv=cv+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
@@ -823,7 +825,7 @@ for (mmm=0;mmm<mmmf;mmm++){
             	betalaboyyyint=0+0*I;
             	betalaboxyyint=0+0*I;
             	betalaboxxxint=0+0*I;
-            	
+            	betalaboyyyint=0+0*I;
             	
 		for (ii=0;ii<nombredipole;ii++){
 			betameso[0][0][0]=betamesoxxx[ii];
@@ -862,6 +864,7 @@ for (mmm=0;mmm<mmmf;mmm++){
             betalabozyyint=betalabozyyint+betalabzyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
             betalaboxyyint=betalaboxyyint+betalabxyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 			betalaboyxxint=betalaboyxxint+betalabyxx_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
+			betalaboyyyint=betalaboyyyint+betalabyyy_retard(xi, yj, zk, betameso, x[ii],y[ii],z[ii],petitk, grandk,grandtheta);
 				}
 				beta_xxx_moy=beta_xxx_moy+hx*hy*hz*(betalaboxxxint*conj(betalaboxxxint))*sin(yj);
                 beta_xyy_moy=beta_xyy_moy+hx*hy*hz*(betalaboxyyint*conj(betalaboxyyint))*sin(yj);
